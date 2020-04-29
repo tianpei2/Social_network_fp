@@ -1,17 +1,23 @@
-val input = "Coronaoutbreak.csv"
+val Coronaoutbreak_March = "Coronaoutbreak_March.csv"
+val Coronaoutbreak_April = "Coronaoutbreak_April.csv"
+val Coronavirus_March = "Coronavirus_March.csv"
+val Coronavirus_April = "Coronavirus_April.csv"
+val COVID_March = "COVID_March.csv"
+val COVID_April = "COVID_April.csv"
 
-val RDD = sc.textFile(input)
+val Coronaoutbreak_March_RDD = sc.textFile(Coronaoutbreak_March).map(line=>line.split(";")).map(field=>field(1)).map(line=>line.split(" ")).map(field=>field(0)).map(field=>(field, 1)).reduceByKey((v1, v2)=>v1 + v2)
 
-val lineRDD = RDD.map(line=>line.split(";"))
+val Coronaoutbreak_April_RDD = sc.textFile(Coronaoutbreak_April).map(line=>line.split(";")).map(field=>field(1)).map(line=>line.split(" ")).map(field=>field(0)).map(field=>(field, 1)).reduceByKey((v1, v2)=>v1 + v2)
 
-val dataRDD = lineRDD.map(field=>field(1))
+val Coronavirus_March_RDD = sc.textFile(Coronavirus_March).map(line=>line.split(";")).map(field=>field(1)).map(line=>line.split(" ")).map(field=>field(0)).map(field=>(field, 1)).reduceByKey((v1, v2)=>v1 + v2)
 
-val dateWithoutClockRDD = dataRDD.map(line=>line.split(" ")).map(field=>field(0))
+val Coronavirus_April_RDD = sc.textFile(Coronavirus_April).map(line=>line.split(";")).map(field=>field(1)).map(line=>line.split(" ")).map(field=>field(0)).map(field=>(field, 1)).reduceByKey((v1, v2)=>v1 + v2)
 
-val countDateRDD = dateWithoutClockRDD.map(field=>(field, 1))
+val COVID_March_RDD = sc.textFile(COVID_March).map(line=>line.split(";")).map(field=>field(1)).map(line=>line.split(" ")).map(field=>field(0)).map(field=>(field, 1)).reduceByKey((v1, v2)=>v1 + v2)
 
-val finalRDD = countDateRDD.reduceByKey((v1, v2)=>v1 + v2)
+val COVID_April_RDD = sc.textFile(COVID_April).map(line=>line.split(";")).map(field=>field(1)).map(line=>line.split(" ")).map(field=>field(0)).map(field=>(field, 1)).reduceByKey((v1, v2)=>v1 + v2)
 
-val output = "Coronaoutbreak_DateCount"
+val finalRDD = Coronaoutbreak_March_RDD.fullOuterJoin(Coronaoutbreak_April_RDD).map(field=>(field._1, field._2._1.getOrElse(0) + field._2._2.getOrElse(0))).fullOuterJoin(Coronavirus_March_RDD).map(field=>(field._1, field._2._1.getOrElse(0) + field._2._2.getOrElse(0))).fullOuterJoin(Coronavirus_April_RDD).map(field=>(field._1, field._2._1.getOrElse(0) + field._2._2.getOrElse(0))).fullOuterJoin(COVID_March_RDD).map(field=>(field._1, field._2._1.getOrElse(0) + field._2._2.getOrElse(0))).fullOuterJoin(COVID_April_RDD).map(field=>(field._1, field._2._1.getOrElse(0) + field._2._2.getOrElse(0)))
 
+val output = "outputTweetsNumberByDate"
 finalRDD.saveAsTextFile(output)
