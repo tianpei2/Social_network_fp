@@ -3,8 +3,9 @@ import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from numpy import dot
 from numpy.linalg import norm
+from sklearn.linear_model import LinearRegression
 
-# # get the number of confirmed cases of covid-19
+# ##################### Part 1: get the number of confirmed cases of covid-19 ####################
 # covid_data = pd.read_csv("covid_confirmed_usafacts.csv")
 # idx = covid_data.index[covid_data['State']=='NY']
 # pre = idx[0]
@@ -15,7 +16,7 @@ from numpy.linalg import norm
 # NY_covid.columns = ['date', 'number of confirmed cases']
 # NY_covid.to_csv('NY_covid.csv')
 
-# get the number of confirmed cases of covid-19
+# #################### Part 2: get the number of confirmed cases of covid-19 for all states ####################
 # states = pd.read_csv('states.csv')['Abbreviation'].to_numpy()
 # covid = pd.DataFrame()
 # print(covid)
@@ -30,7 +31,7 @@ from numpy.linalg import norm
 # 	covid[s] = covid_data.iloc[pre:post+1, col_pre:col_post+1].sum()
 # covid.to_csv('covid.csv', header=True)
 
-# # get the number of tweets about covid-19
+# ##################### Part 3: get the number of tweets about covid-19 ####################
 # date1 = '2020-03-12'
 # date2 = '2020-04-30'
 # mydates = pd.date_range(start=date1, end=date2).strftime('%Y-%m-%d').tolist()
@@ -46,20 +47,38 @@ from numpy.linalg import norm
 # tweets = pd.DataFrame(tweets)
 # tweets.to_csv('tweets.csv')
 
-# analyze the correlation 
+# ##################### Part 4: analyze the correlation ####################
+# corr = pd.DataFrame()
+# covid_data = pd.read_csv("covid.csv")
+
+# tweets = pd.read_csv("tweets.csv")
+# states = pd.read_csv('states.csv')['Abbreviation'].to_numpy()
+
+# tweets = tweets['number of tweets with Covid'].to_numpy()
+# tweets = (tweets[1:] - tweets[:-1]) / tweets[:-1]
+# for s in states:
+# 	covid = covid_data[s].values
+# 	covid = (covid[1:] - covid[:-1] + 1) / (covid[:-1] + 1)
+# 	cos_sim = dot(covid, tweets) /(norm(covid) * norm(tweets))
+# 	corr[s] = [cos_sim]
+# corr = corr.T
+# corr.to_csv('correlation.csv', header=True)
+
+#################### Part 5: analyze in terms of linear regression ####################
 corr = pd.DataFrame()
 covid_data = pd.read_csv("covid.csv")
 
 tweets = pd.read_csv("tweets.csv")
 states = pd.read_csv('states.csv')['Abbreviation'].to_numpy()
+tweets = tweets['number of tweets with Covid'].to_numpy().reshape((-1, 1))
 
-tweets = tweets['number of tweets with Covid'].to_numpy()
-tweets = (tweets[1:] - tweets[:-1]) / tweets[:-1]
+regressor = LinearRegression() 
+
 for s in states:
-	covid = covid_data[s].values
-	covid = (covid[1:] - covid[:-1] + 1) / (covid[:-1] + 1)
-	cos_sim = dot(covid, tweets) /(norm(covid) * norm(tweets))
-	corr[s] = [cos_sim]
-corr = corr.T
-corr.to_csv('correlation.csv', header=True)
+	regressor = LinearRegression()
+	covid = covid_data[s].values.reshape((-1, 1))
+	regressor.fit(tweets, covid) #training the algorithm
+	corr[s] = [regressor.coef_[0][0], regressor.intercept_[0]]
 
+corr = corr.T
+corr.to_csv('LinearRegression.csv', header=True)
