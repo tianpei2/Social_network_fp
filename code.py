@@ -4,6 +4,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from numpy import dot
 from numpy.linalg import norm
 from sklearn.linear_model import LinearRegression
+import glob
 
 # ##################### Part 1: get the number of confirmed cases of covid-19 ####################
 # covid_data = pd.read_csv("covid_confirmed_usafacts.csv")
@@ -64,21 +65,38 @@ from sklearn.linear_model import LinearRegression
 # corr = corr.T
 # corr.to_csv('correlation.csv', header=True)
 
-#################### Part 5: analyze in terms of linear regression ####################
-corr = pd.DataFrame()
-covid_data = pd.read_csv("covid.csv")
+# #################### Part 5: analyze in terms of linear regression ####################
+# corr = pd.DataFrame()
+# covid_data = pd.read_csv("covid.csv")
 
-tweets = pd.read_csv("tweets.csv")
-states = pd.read_csv('states.csv')['Abbreviation'].to_numpy()
-tweets = tweets['number of tweets with Covid'].to_numpy().reshape((-1, 1))
+# tweets = pd.read_csv("tweets.csv")
+# states = pd.read_csv('states.csv')['Abbreviation'].to_numpy()
+# tweets = tweets['number of tweets with Covid'].to_numpy().reshape((-1, 1))
 
-regressor = LinearRegression() 
+# for s in states:
+# 	regressor = LinearRegression()
+# 	covid = covid_data[s].values.reshape((-1, 1))
+# 	regressor.fit(tweets, covid) #training the algorithm
+# 	corr[s] = [regressor.coef_[0][0], regressor.intercept_[0]]
 
-for s in states:
-	regressor = LinearRegression()
-	covid = covid_data[s].values.reshape((-1, 1))
-	regressor.fit(tweets, covid) #training the algorithm
-	corr[s] = [regressor.coef_[0][0], regressor.intercept_[0]]
+# corr = corr.T
+# corr.to_csv('LinearRegression.csv', header=True)
 
-corr = corr.T
-corr.to_csv('LinearRegression.csv', header=True)
+
+# #################### Part 6: clean the weather data ####################
+input_path = 'weather' # use your path
+all_files = glob.glob(input_path + "/*.csv")
+output_path = 'cleaned_weather/'
+
+for filename in all_files:
+	weather_data = pd.read_csv(filename)
+	weather_data = weather_data[['DATE', "HourlyAltimeterSetting", "HourlyDewPointTemperature", "HourlyDryBulbTemperature", "HourlyRelativeHumidity", "HourlySeaLevelPressure", "HourlyStationPressure", "HourlyVisibility", "HourlyWetBulbTemperature", "HourlyWindDirection"]]
+	weather_data['DATE'] = pd.to_datetime(weather_data['DATE']).dt.floor('d')
+
+	for c in ["HourlyAltimeterSetting", "HourlyDewPointTemperature", "HourlyDryBulbTemperature", "HourlyRelativeHumidity", "HourlySeaLevelPressure", "HourlyStationPressure", "HourlyVisibility", "HourlyWetBulbTemperature", "HourlyWindDirection"]:
+		weather_data[c] = weather_data[c].apply (pd.to_numeric, errors='coerce')
+		weather_data[c] = weather_data[c].dropna()
+	weather_data = weather_data.groupby('DATE').mean()
+	out_file = output_path + filename.split('/')[-1]
+	weather_data.to_csv(out_file)
+
