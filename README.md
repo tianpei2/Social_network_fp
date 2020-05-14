@@ -7,46 +7,46 @@ Twiiter scraper source: https://www.kaggle.com/smid80/coronavirus-covid19-tweets
 
 ## Input
 
-#### tweets
+#### tweets (file)
 
-raw data of tweets
+-   raw data of tweets
 
-#### weather
+#### weather (file)
 
-raw data of weather for counties: New York, Queens, Suffolk, Westchester
+-   raw data of weather for counties: New York, Queens, Suffolk, Westchester
 
 #### covid_confirmed_usafacts.csv
 
-covid-19 comfrimed cases dataset
+-   covid-19 comfrimed cases dataset
 
 #### states.csv
 
-map from states name to Abbreviation
+-   map from states name to Abbreviation
 
 ## Data cleaning (from 3/12 to 4/30 )
 
 #### covid.csv
 
-number of confrimed cases of Covid-19
+-   number of confrimed cases of Covid-19
 
 #### tweets.csv
 
-number of tweets with hashtags: #coronavirus, #coronavirusoutbreak, #coronavirusPandemic, #covid19, #covid_19
+-   number of tweets with hashtags: #coronavirus, #coronavirusoutbreak, #coronavirusPandemic, #covid19, #covid_19
 
-#### cleaned_weather
+#### cleaned_weather (file)
 
-with attributes: humidity, visibility, temperature, pressure
+-   with attributes: humidity, visibility, temperature, pressure
 
 ## Output (correlation)
 
 #### correlation.csv
 
-correlation between increasing rate of number of confrimed cases and tweets w.r.t each state
+-   correlation between increasing rate of number of confrimed cases and tweets w.r.t each state
 
 #### LinearRegression.csv
 
-linear relationship between total number of confrimed cases and tweets w.r.t each state
+-   linear relationship between total number of confrimed cases and tweets w.r.t each state
 
 #### correlation_of_weather_and_covid19.csv
 
-correlation between increasing rate of number of confrimed cases and tweets w.r.t certain county
+-   correlation between increasing rate of number of confrimed cases and tweets w.r.t certain county
