@@ -84,19 +84,67 @@ import glob
 
 
 # #################### Part 6: clean the weather data ####################
-input_path = 'weather' # use your path
+# input_path = 'weather' # use your path
+# all_files = glob.glob(input_path + "/*.csv")
+# output_path = 'cleaned_weather/'
+
+# for filename in all_files:
+# 	weather_data = pd.read_csv(filename)
+# 	weather_data = weather_data[['DATE', "HourlyAltimeterSetting", "HourlyDewPointTemperature", "HourlyDryBulbTemperature", "HourlyRelativeHumidity", "HourlySeaLevelPressure", "HourlyStationPressure", "HourlyVisibility", "HourlyWetBulbTemperature", "HourlyWindDirection"]]
+# 	weather_data['DATE'] = pd.to_datetime(weather_data['DATE']).dt.floor('d')
+
+# 	for c in ["HourlyAltimeterSetting", "HourlyDewPointTemperature", "HourlyDryBulbTemperature", "HourlyRelativeHumidity", "HourlySeaLevelPressure", "HourlyStationPressure", "HourlyVisibility", "HourlyWetBulbTemperature", "HourlyWindDirection"]:
+# 		weather_data[c] = weather_data[c].apply (pd.to_numeric, errors='coerce')
+# 		weather_data[c] = weather_data[c].dropna()
+# 	weather_data = weather_data.groupby('DATE').mean()
+# 	out_file = output_path + filename.split('/')[-1]
+# 	weather_data.to_csv(out_file)
+
+# #################### Part 7: analyze correlation between weather and covid-19 ####################
+input_path = 'cleaned_weather/' # use your path
 all_files = glob.glob(input_path + "/*.csv")
-output_path = 'cleaned_weather/'
+counties = [f.split('/')[-1].split('.')[0] for f in all_files]
+
+# covid_data = pd.read_csv("covid_confirmed_usafacts.csv")
+# col_pre = covid_data.columns.get_loc("3/12/20")
+# col_post = covid_data.columns.get_loc("4/30/20")
+# covid = pd.DataFrame()
+
+# for c in counties:
+# 	co = covid_data[(covid_data['County Name'] == c) & (covid_data['State'] == 'NY')]
+# 	covid = pd.concat([covid, co])
+
+# covid = covid.iloc[:, col_pre:col_post+1]
+# covid = covid.T
+# covid.to_csv('county_covid.csv')
+
+
+corr = pd.DataFrame(columns = ["humidity", "visibility", "temperature", "pressure"], index = ["Suffolk County", "Queens County", "New York County", "Westchester County"])
+covid = pd.read_csv('county_covid.csv') 
 
 for filename in all_files:
+	c = filename.split('/')[-1].split('.')[0]
+	covid19 = covid[c].values
+	covid19 = (covid19[1:] - covid19[:-1] + 1)/ (covid19[:-1] + 1)
 	weather_data = pd.read_csv(filename)
-	weather_data = weather_data[['DATE', "HourlyAltimeterSetting", "HourlyDewPointTemperature", "HourlyDryBulbTemperature", "HourlyRelativeHumidity", "HourlySeaLevelPressure", "HourlyStationPressure", "HourlyVisibility", "HourlyWetBulbTemperature", "HourlyWindDirection"]]
-	weather_data['DATE'] = pd.to_datetime(weather_data['DATE']).dt.floor('d')
 
-	for c in ["HourlyAltimeterSetting", "HourlyDewPointTemperature", "HourlyDryBulbTemperature", "HourlyRelativeHumidity", "HourlySeaLevelPressure", "HourlyStationPressure", "HourlyVisibility", "HourlyWetBulbTemperature", "HourlyWindDirection"]:
-		weather_data[c] = weather_data[c].apply (pd.to_numeric, errors='coerce')
-		weather_data[c] = weather_data[c].dropna()
-	weather_data = weather_data.groupby('DATE').mean()
-	out_file = output_path + filename.split('/')[-1]
-	weather_data.to_csv(out_file)
+	h = weather_data["HourlyRelativeHumidity"].values
+	h = (h[1:] - h[:-1]) / h[:-1]
+	corr.at[c, "humidity"] = dot(covid19, h) /(norm(covid19) * norm(h))
+
+	v = weather_data["HourlyVisibility"].values
+	v = (v[1:] - v[:-1]) / v[:-1]
+	corr.at[c, "visibility"] = dot(covid19, v) /(norm(covid19) * norm(v))
+
+
+	t = weather_data["HourlyWetBulbTemperature"].values
+	t = (t[1:] - t[:-1]) / t[:-1]
+	corr.at[c, "temperature"] = dot(covid19, t) /(norm(covid19) * norm(t))
+
+	p = weather_data["HourlyStationPressure"].values
+	p = (p[1:] - p[:-1]) / p[:-1]
+	corr.at[c, "pressure"] = dot(covid19, p) /(norm(covid19) * norm(p))
+
+corr.to_csv('correlation of weather and covid19.csv')
+
 
